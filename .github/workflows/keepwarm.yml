@@ -2,22 +2,24 @@ name: Keep demo line warm
 on:
   schedule:
     - cron: "*/5 * * * *"
+    - cron: "17 6 1 * *"
   workflow_dispatch: {}
 permissions:
   contents: write
 jobs:
   ping:
+    if: github.event.schedule != '17 6 1 * *'
     runs-on: ubuntu-latest
     steps:
       - run: |
           curl -sf --max-time 15 https://line.dialkeep.ai/health || \
           curl -sf --max-time 15 https://dialkeep-line.vercel.app/health
   keepalive:
-    if: github.event.schedule && github.run_number % 8000 == 0 || github.event_name == 'workflow_dispatch'
+    if: github.event.schedule == '17 6 1 * *' || github.event_name == 'workflow_dispatch'
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
-      - name: Empty commit so GitHub never disables the 60-day-idle schedule
+      - name: Monthly empty commit so GitHub never disables the 60-day-idle schedule
         run: |
           git config user.name "keepwarm-bot"
           git config user.email "actions@github.com"
